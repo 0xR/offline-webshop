@@ -45,6 +45,34 @@ async function search({ query, state, setState }) {
   setState({ searchResults: results });
 }
 
+function priceOfProduct(product) {
+  return product.colorVariants[0].price;
+}
+
+function buy(product) {
+  return new Promise((resolve, reject) => {
+    Notification.requestPermission(result => {
+      if (result !== 'granted')
+        return reject(Error('Denied notification permission'));
+      resolve();
+    });
+  })
+    .then(() => {
+      return navigator.serviceWorker.ready;
+    })
+    .then(registration => {
+      return registration.sync.register(
+        JSON.stringify({
+          event: 'buy',
+          id: product.id,
+          name: product.name,
+          quantity: 1,
+          expectedPrice: priceOfProduct(product),
+        }),
+      );
+    });
+}
+
 class App extends Component {
   constructor() {
     super();
@@ -72,32 +100,19 @@ class App extends Component {
         >
           <input name="query" />
         </form>
-        <p className="App-intro">
-          <button
-            onClick={() =>
-              new Promise((resolve, reject) => {
-                Notification.requestPermission(result => {
-                  if (result !== 'granted')
-                    return reject(Error('Denied notification permission'));
-                  resolve();
-                });
-              })
-                .then(() => {
-                  return navigator.serviceWorker.ready;
-                })
-                .then(reg => {
-                  return reg.sync.register('syncTest');
-                })
-            }
-          >
-            Test sync
-          </button>
-        </p>
         <p>Loaded {Object.keys(this.state.products).length} products</p>
         <ul>
-          {this.state.searchResults.map(id => (
-            <li key={id}>{this.state.products[id].name}</li>
-          ))}
+          {this.state.searchResults.map(id => {
+            const product = this.state.products[id];
+            return (
+              <li key={id}>
+                {product.name}
+                <button onClick={() => buy(product)}>
+                  Buy for {priceOfProduct(product)}
+                </button>
+              </li>
+            );
+          })}
         </ul>
       </div>
     );

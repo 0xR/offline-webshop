@@ -1,3 +1,6 @@
 self.addEventListener('sync', function(event) {
-  self.registration.showNotification(`Sync event fired!`);
+  const buyEvent = JSON.parse(event.tag);
+  self.registration.showNotification(
+    `Bought ${buyEvent.name} for ${buyEvent.expectedPrice}`,
+  );
 });
