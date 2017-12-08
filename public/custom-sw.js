@@ -1,3 +1,11 @@
 self.addEventListener('sync', function(event) {
-  self.registration.showNotification(`Sync event fired!`);
+  const buyEvent = JSON.parse(event.tag);
+  fetch('/buy', {
+      method: "POST",
+      body: JSON.stringify(buyEvent),
+      headers: {"Content-Type":"application/json"}
+  });
+  self.registration.showNotification(
+    `Bought ${buyEvent.name} for ${buyEvent.expectedPrice}`,
+  );
 });

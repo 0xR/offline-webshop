@@ -22,6 +22,34 @@ async function search({ query, state, setState }) {
   setState({ searchResults });
 }
 
+function priceOfProduct(product) {
+  return product.colorVariants[0].price;
+}
+
+function buy(product) {
+  return new Promise((resolve, reject) => {
+    Notification.requestPermission(result => {
+      if (result !== 'granted')
+        return reject(Error('Denied notification permission'));
+      resolve();
+    });
+  })
+    .then(() => {
+      return navigator.serviceWorker.ready;
+    })
+    .then(registration => {
+      return registration.sync.register(
+        JSON.stringify({
+          event: 'buy',
+          id: product.id,
+          name: product.name,
+          quantity: 1,
+          expectedPrice: priceOfProduct(product),
+        }),
+      );
+    });
+}
+
 class App extends Component {
   constructor() {
     super();
@@ -83,6 +111,9 @@ class App extends Component {
             <li key={item.id}>
               <h2>{item.name}</h2>
               <div dangerouslySetInnerHTML={{__html: item.text}}></div>
+              <button onClick={() => buy(item)}>
+                Buy for {priceOfProduct(item.value)}
+              </button>
             </li>
           ))}
         </ul>

@@ -1,5 +1,6 @@
 const Koa = require('koa');
 const fs = require('fs-extra');
+const bodyParser = require('koa-bodyparser');
 
 const search = require('./data/search-0-952.json');
 const uniqueIds = Array.from(
@@ -22,6 +23,7 @@ const products = Promise.all(
 const productRegex = /\/product\/(\d{6})$/;
 
 const app = new Koa();
+app.use(bodyParser());
 app.use(async ctx => {
   if (ctx.url === '/search') {
     ctx.body = uniqueIds;
@@ -30,6 +32,10 @@ app.use(async ctx => {
     ctx.body = (await products)[id];
   } else if (ctx.url === '/cards') {
     ctx.body = require('./cards');
+  } else if(ctx.url === '/buy' && ctx.method === 'POST'){
+    const buyEvent = ctx.request.body;
+    console.log(buyEvent.event + " " + buyEvent.name + " for " + buyEvent.expectedPrice);
+    ctx.status = 204;
   }
 });
 
