@@ -97,22 +97,23 @@ class App extends Component {
             Test sync
           </button>
           <button
-          onClick={async () => {
-            await clear();
-            await loadProducts(this.boundSetState);            
-          }}
-        >
-          Load products
-        </button>
+            onClick={async () => {
+              await clear();
+              await loadProducts(this.boundSetState);
+            }}
+          >
+            Load products
+          </button>
         </p>
-        <p>Loaded {Object.keys(this.state.products).length} products</p>
         <ul>
           {this.state.searchResults.map(item => (
             <li key={item.id}>
-              <h2>{item.name}</h2>
-              <div dangerouslySetInnerHTML={{__html: item.text}}></div>
-              <button onClick={() => buy(item)}>
-                Buy for {priceOfProduct(item.value)}
+              <h2>{item.product.name}</h2>
+              <div
+                dangerouslySetInnerHTML={{ __html: item.product.description }}
+              />
+              <button onClick={() => buy(item.product)}>
+                Buy for {priceOfProduct(item.product)}
               </button>
             </li>
           ))}
