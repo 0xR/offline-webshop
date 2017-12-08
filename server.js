@@ -28,6 +28,8 @@ app.use(async ctx => {
   } else if (productRegex.test(ctx.url)) {
     const id = productRegex.exec(ctx.url)[1];
     ctx.body = (await products)[id];
+  } else if (ctx.url === '/cards') {
+    ctx.body = require('./cards');
   }
 });
 
