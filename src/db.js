@@ -23,7 +23,7 @@ db.open();
 
 export default db;
 
-export const addProducts = products =>
+export const addProducts = (products, onAdd) =>
   db.transaction('rw', db.products, () => {
     products.forEach(p => {
       var tokens = toTokens(
@@ -45,7 +45,7 @@ export const addProducts = products =>
         product: p,
       };
       console.log('adding product:', insert, p);
-      db.products.add(insert);
+      db.products.add(insert).then(onAdd);
     });
   });
 
@@ -63,10 +63,4 @@ export const findProducts = async query => {
   return docs;
 };
 
-export const clear = async () => {
-  // await new Promise(function (resolve, reject) {
-  //   var req = indexedDB.deleteDatabase('products');
-  //   req.onsuccess = resolve;
-  //   req.onerror = resolve;
-  // });
-};
+export const clear = () => db.products.clear();

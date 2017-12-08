@@ -4,17 +4,15 @@ import './App.css';
 
 import { addProducts, findProducts, clear } from './db';
 
-clear();
-
 function loadProduct(id) {
   return fetch(`/product/${id}`).then(r => r.json());
 }
 
-async function loadProducts(setState) {
+async function loadProducts(setState, onAdd) {
   const ids = await (await fetch('/search')).json();
   const data = await Promise.all(ids.map(loadProduct));
 
-  addProducts(data);
+  addProducts(data, onAdd);
 }
 
 async function search({ query, state, setState }) {
@@ -53,7 +51,7 @@ function buy(product) {
 class App extends Component {
   constructor() {
     super();
-    this.state = { products: {}, searchResults: [] };
+    this.state = { loaded: 0, products: {}, searchResults: [] };
     this.boundSetState = this.setState.bind(this);
   }
 
@@ -99,12 +97,16 @@ class App extends Component {
           <button
             onClick={async () => {
               await clear();
-              await loadProducts(this.boundSetState);
+              let i = 0;
+              await loadProducts(this.boundSetState, () => {
+                this.boundSetState({ loaded: i++ });
+              });
             }}
           >
             Load products
           </button>
         </p>
+        <p>{this.state.loaded} products</p>
         <ul>
           {this.state.searchResults.map(item => (
             <li key={item.id}>
