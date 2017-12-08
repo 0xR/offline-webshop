@@ -46,8 +46,8 @@ function stop(type) {
 }
 
 const load = async () => {
-      await start('Attempt ' + attempt, 'group');
-      await start('Destroying database');
+      await start('Attempt ' + attempt, 'group')();
+      await start('Destroying database')();
       
       await new Promise(function (resolve, reject) {
         var req = indexedDB.deleteDatabase('test');
@@ -55,8 +55,8 @@ const load = async () => {
         req.onerror = resolve;
       });
 
-      await stop();
-      await start('Creating database')
+      await stop()();
+      await start('Creating database')();
 
       await new Promise(function (resolve, reject) {
         db = new Dexie("test");
@@ -67,20 +67,20 @@ const load = async () => {
         resolve();
       });
 
-      await stop();
-      await start('Downloading cards');
+      await stop()();
+      await start('Downloading cards')();
 
       const data = await fetch('./cards').then(r => r.json());
 
-      await stop();
+      await stop()();
       await start('Transforming object to array');
 
       const mapped = Object.keys(data).map(name => {
           return data[name];
       });
 
-      await stop();
-      await start('Inserting data');
+      await stop()();
+      await start('Inserting data')();
 
       db.transaction("rw", db.cards, () => {
         mapped.forEach(card => {
@@ -95,11 +95,11 @@ const load = async () => {
         });
       });
 
-      await stop();
+      await stop()();
 
-      await start('Searching for "Kitten"');
+      await start('Searching for "Kitten"')();
       const kitten = await search('kitten').then(log);
-      await stop()
+      await stop()();
 
         //   .then(start('Searching for "cat"'))
       //   .then(function() {

@@ -1,48 +1,25 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import { Builder } from 'lunr';
 
-async function getProduct(id) {
-  return await (await fetch(`/product/${id}`)).json();
+import { addProducts, findProducts, clear } from './db';
+
+clear();
+
+function loadProduct(id) {
+  return fetch(`/product/${id}`).then(r => r.json());
 }
 
-const builder = new Builder();
-builder.field('description');
-builder.field('name');
-
-let resolveIdx;
-const idx = new Promise(resolve => {
-  resolveIdx = resolve;
-});
-
-async function buildIndex(ids, setState) {
-  let stored = 0;
-
-  const products = {};
-
-  function storeProduct(id, product) {
-    products[id] = product;
-    builder.add(product);
-    setState({ products });
-    stored++;
-    if (stored === ids.length) {
-      const idx = builder.build();
-      resolveIdx(idx);
-    }
-  }
-
-  ids.map(id => getProduct(id).then(product => storeProduct(id, product)));
-}
-
-async function getProducts(setState) {
+async function loadProducts(setState) {
   const ids = await (await fetch('/search')).json();
-  buildIndex(ids, setState);
+  const data = await Promise.all(ids.map(loadProduct));
+
+  addProducts(data.slice(0, 10));
 }
 
 async function search({ query, state, setState }) {
-  const results = (await idx).search(query).map(({ ref }) => ref);
-  setState({ searchResults: results });
+  const searchResults = await findProducts(query);
+  setState({ searchResults });
 }
 
 class App extends Component {
@@ -50,7 +27,6 @@ class App extends Component {
     super();
     this.state = { products: {}, searchResults: [] };
     this.boundSetState = this.setState.bind(this);
-    getProducts(this.boundSetState);
   }
 
   render() {
@@ -92,11 +68,22 @@ class App extends Component {
           >
             Test sync
           </button>
+          <button
+          onClick={async () => {
+            await clear();
+            await loadProducts(this.boundSetState);            
+          }}
+        >
+          Load products
+        </button>
         </p>
         <p>Loaded {Object.keys(this.state.products).length} products</p>
         <ul>
-          {this.state.searchResults.map(id => (
-            <li key={id}>{this.state.products[id].name}</li>
+          {this.state.searchResults.map(item => (
+            <li key={item.id}>
+              <h2>{item.name}</h2>
+              <div dangerouslySetInnerHTML={{__html: item.text}}></div>
+            </li>
           ))}
         </ul>
       </div>
