@@ -82,12 +82,17 @@ class App extends Component {
                   resolve();
                 });
               })
+                .then(() => {
+                  return navigator.serviceWorker.ready;
+                })
+                .then(reg => {
+                  return reg.sync.register('syncTest');
+                })
             }
           >
-            Enable notifications
+            Test sync
           </button>
         </p>
-        <div class="log" />
         <p>Loaded {Object.keys(this.state.products).length} products</p>
         <ul>
           {this.state.searchResults.map(id => (
