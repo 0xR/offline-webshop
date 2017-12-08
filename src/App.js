@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
+import { List, Item, Button, Container, SearchField } from './Products';
 
 import { addProducts, findProducts, clear } from './db';
 
@@ -65,72 +66,70 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
+          <h1 className="App-title">Welcome to the offline store</h1>
+          <p className="App-intro">
+            <button
+              onClick={() =>
+                new Promise((resolve, reject) => {
+                  Notification.requestPermission(result => 
+                    (result === 'granted') ? resolve() : reject(Error('Denied notification permission'))
+                  );
+                })
+                  .then(() => navigator.serviceWorker.ready)
+                  .then(reg => reg.sync.register('syncTest'))
+              }
+            >
+              Test sync
+            </button>
+            <button
+              onClick={async () => {
+                await clear();
+                let i = 0;
+                let j = 0;
+                await loadProducts(
+                  this.boundSetState,
+                  () => {
+                    this.boundSetState({ loaded: i++ });
+                  },
+                  () => {
+                    this.boundSetState({ added: j++ });
+                  },
+                );
+              }}
+            >
+              Load products
+            </button>
+          </p>
+          <p>We have {this.state.loaded} products loaded & {this.state.added} products added</p>
+
         </header>
-        <form>
-          <input name="query" onChange={e => {
-            e.preventDefault();
-            search({
-              query: e.target.value,
-              state: this.state,
-              setState: this.boundSetState,
-            });
-          }}/>
-        </form>
-        <p className="App-intro">
-          <button
-            onClick={() =>
-              new Promise((resolve, reject) => {
-                Notification.requestPermission(result => {
-                  if (result !== 'granted')
-                    return reject(Error('Denied notification permission'));
-                  resolve();
-                });
-              })
-                .then(() => {
-                  return navigator.serviceWorker.ready;
-                })
-                .then(reg => {
-                  return reg.sync.register('syncTest');
-                })
-            }
-          >
-            Test sync
-          </button>
-          <button
-            onClick={async () => {
-              await clear();
-              let i = 0;
-              let j = 0;
-              await loadProducts(
-                this.boundSetState,
-                () => {
-                  this.boundSetState({ loaded: i++ });
-                },
-                () => {
-                  this.boundSetState({ added: j++ });
-                },
-              );
-            }}
-          >
-            Load products
-          </button>
-        </p>
-        <p>{this.state.loaded} products loaded</p>
-        <p>{this.state.added} products added</p>
-        <ul>
-          {this.state.searchResults.map(item => (
-            <li key={item.id}>
-              <h2>{item.product.name}</h2>
-              <div
-                dangerouslySetInnerHTML={{ __html: item.product.description }}
-              />
-              <button onClick={() => buy(item.product)}>
-                Buy for {priceOfProduct(item.product)}
-              </button>
-            </li>
-          ))}
-        </ul>
+        <Container>
+          <form>
+            <SearchField name="query" placeholder="Search for products" onChange={e => {
+              e.preventDefault();
+              search({
+                query: e.target.value,
+                state: this.state,
+                setState: this.boundSetState,
+              });
+            }}/>
+          </form>
+        </Container>
+        <Container>
+          <List>
+            {this.state.searchResults.map(item => (
+              <Item key={item.id}>
+                <h2>{item.product.name}</h2>
+                <div
+                  dangerouslySetInnerHTML={{ __html: item.product.description }}
+                />
+                <Button onClick={() => buy(item.product)}>
+                  Buy for {priceOfProduct(item.product)}
+                </Button>
+              </Item>
+            ))}
+          </List>
+        </Container>
       </div>
     );
   }

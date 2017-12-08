@@ -1,5 +1,17 @@
-body {
+html {
   margin: 0;
   padding: 0;
   font-family: sans-serif;
+  background-image: linear-gradient(to bottom, rgb(231, 229, 229), rgb(224, 224, 235));
+  background-attachment: fixed;
+
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
 }

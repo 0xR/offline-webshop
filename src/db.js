@@ -44,7 +44,6 @@ export const addProducts = (products, onAdd) =>
         tokens,
         product: p,
       };
-      console.log('adding product:', insert, p);
       db.products.add(insert).then(onAdd);
     });
   });
