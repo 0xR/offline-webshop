@@ -4,13 +4,18 @@ import './App.css';
 
 import { addProducts, findProducts, clear } from './db';
 
-function loadProduct(id) {
-  return fetch(`/product/${id}`).then(r => r.json());
+function loadProduct(id, onLoad) {
+  return fetch(`/product/${id}`)
+    .then(r => r.json())
+    .then(json => {
+      onLoad();
+      return json;
+    });
 }
 
-async function loadProducts(setState, onAdd) {
+async function loadProducts(setState, onLoad, onAdd) {
   const ids = await (await fetch('/search')).json();
-  const data = await Promise.all(ids.map(loadProduct));
+  const data = await Promise.all(ids.map(id => loadProduct(id, onLoad)));
 
   addProducts(data, onAdd);
 }
@@ -51,7 +56,7 @@ function buy(product) {
 class App extends Component {
   constructor() {
     super();
-    this.state = { loaded: 0, products: {}, searchResults: [] };
+    this.state = { added: 0, loaded: 0, products: {}, searchResults: [] };
     this.boundSetState = this.setState.bind(this);
   }
 
@@ -98,15 +103,23 @@ class App extends Component {
             onClick={async () => {
               await clear();
               let i = 0;
-              await loadProducts(this.boundSetState, () => {
-                this.boundSetState({ loaded: i++ });
-              });
+              let j = 0;
+              await loadProducts(
+                this.boundSetState,
+                () => {
+                  this.boundSetState({ loaded: i++ });
+                },
+                () => {
+                  this.boundSetState({ added: j++ });
+                },
+              );
             }}
           >
             Load products
           </button>
         </p>
-        <p>{this.state.loaded} products</p>
+        <p>{this.state.loaded} products loaded</p>
+        <p>{this.state.added} products added</p>
         <ul>
           {this.state.searchResults.map(item => (
             <li key={item.id}>
