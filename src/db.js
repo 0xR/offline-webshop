@@ -2,10 +2,18 @@ import lunr from 'lunr';
 import Dexie from 'dexie';
 
 const db = new Dexie('products');
-var pipeline = new lunr.Pipeline();
 
-function getTokenStream(text) {
-  return pipeline.run(lunr.tokenizer(text));
+function cleanData(text) {
+  return text
+    .replace(/,/g, ' ')
+    .replace(/\./g, ' ')
+    .replace(/<[^>]*>/g, '')
+    .replace('&nbsp;', ' ');
+}
+
+function toTokens(text) {
+  const cleanText = cleanData(text);
+  return lunr.tokenizer(cleanText).map(({ str }) => str);
 }
 
 db.version(1).stores({
@@ -18,7 +26,7 @@ export default db;
 export const addProducts = products =>
   db.transaction('rw', db.products, () => {
     products.forEach(p => {
-      var tokenStream = getTokenStream(
+      var tokens = toTokens(
         p.name +
           ' ' +
           p.description +
@@ -33,7 +41,7 @@ export const addProducts = products =>
       );
       var insert = {
         id: p.id,
-        tokens: tokenStream.map(i => i.str),
+        tokens,
         product: p,
       };
       console.log('adding product:', insert, p);

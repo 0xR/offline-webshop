@@ -14,7 +14,7 @@ async function loadProducts(setState) {
   const ids = await (await fetch('/search')).json();
   const data = await Promise.all(ids.map(loadProduct));
 
-  addProducts(data.slice(0, 10));
+  addProducts(data);
 }
 
 async function search({ query, state, setState }) {

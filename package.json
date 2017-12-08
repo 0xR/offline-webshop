@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "dexie": "^2.0.1",
+    "jest": "^21.2.1",
     "koa": "^2.4.1",
     "koa-bodyparser": "^4.2.0",
     "lunr": "^2.1.5",
