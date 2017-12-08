@@ -67,17 +67,15 @@ class App extends Component {
           <img src={logo} className="App-logo" alt="logo" />
           <h1 className="App-title">Welcome to React</h1>
         </header>
-        <form
-          onSubmit={e => {
+        <form>
+          <input name="query" onChange={e => {
             e.preventDefault();
             search({
-              query: e.target.elements.query.value,
+              query: e.target.value,
               state: this.state,
               setState: this.boundSetState,
             });
-          }}
-        >
-          <input name="query" />
+          }}/>
         </form>
         <p className="App-intro">
           <button
